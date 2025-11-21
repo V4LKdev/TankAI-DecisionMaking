@@ -1,4 +1,4 @@
-# TankAI – Decision-Making & Debugging Tech Sample (C++, Raylib)
+# TankAI - Decision-Making & Debugging Tech Sample (C++, Raylib)
 
 Curated technical snapshot from my TankAI assessment project: a 1v1 top-down tank game used to explore **game-AI decision making** and **debuggable, modular architecture** in C++.
 
@@ -10,7 +10,7 @@ The original game framework (rendering + core tank physics) was provided; the AI
   - Shared **service-gateway architecture** (Sense → Think → Act)
   - Modular services for pathfinding, motion, sensing, and combat
   - Extensive real-time debug overlays for both AI paradigms
-  - **Compatibility focus:** both controllers run against the *same* world API + data flow with identical tick order and tooling
+  - **Compatibility focus:** both controllers run against the *same* world API + tick order + debug tooling
 
 ---
 
@@ -35,12 +35,18 @@ The original game framework (rendering + core tank physics) was provided; the AI
 
 ## Architecture Overview
 
+<div align="center">
+  <img src="Docs/architecture_overview.png" alt="Sense-Think-Act architecture overview" width="85%" />
+  <br/>
+  <em>High-level Sense → Think → Act data flow through gateway + services.</em>
+</div>
+
 The AI is structured around strict separation of concerns:
 
 1) **`AISubsystem`** – central orchestrator  
    Owns agents/services and drives the AI tick.
 
-2) **`AIServiceGateway`** – façade for controllers  
+2) **`AIServiceGateway`** – facade for controllers  
    Exposes world **queries** (e.g., `Sense_VisibleEnemies()`) and **intents** (e.g., `MoveTo()`, `BeginFire()`), hiding service internals.
 
 3) **Services** – decoupled execution modules  
@@ -54,13 +60,15 @@ The AI is structured around strict separation of concerns:
    - `BehaviorTreeController`
 
 **Per-frame flow:**
-- **Sense:** `SensingService` gathers/upgrades world knowledge + events.  
+- **Sense:** `SensingService` gathers/updates world knowledge + events.  
 - **Think:** active controller processes events + queries gateway.  
 - **Act:** `MotionService` / `CombatService` execute intents.
 
 ---
 
 ## AI Controllers
+
+The project includes two distinct AI implementations that use the exact same `AIServiceGateway` API, demonstrating how different decision paradigms can be built on the same architectural foundation.
 
 ### Finite State Machine (FSM)
 A deterministic, state-driven model.
@@ -70,17 +78,29 @@ A deterministic, state-driven model.
 
 ### Behavior Tree (BT)
 A hierarchical model where behavior emerges from composition.
+
+<div align="center">
+  <img src="Docs/behaviourTree_flowchart.png" alt="Behavior Tree flowchart" width="80%" />
+  <br/>
+  <em>BT structure illustrating priority and conditional guards.</em>
+</div>
+
 - **Nodes:** `Selector`, `Sequence`, `Guard`, `Action`
 - **Structure encodes priority:** defensive/low-HP behavior evaluated before engagement.
 - **Profile:** nuanced tactics, distinct low-health mode, less rigid patrol variety.
 
-**Compatibility note:** both FSM and BT are fully interchangeable at runtime because they share identical service APIs, event payloads, and tick order.
+**Compatibility note:** both FSM and BT are runtime-interchangeable because they share identical service APIs, events, and tick order.
 
 ---
 
 ## Debugging
 
-Debug overlays are compiled only in debug builds.
+<div align="center">
+  <img src="Docs/pathfinding_debug.png" alt="Pathfinding debug overlay" width="48%" />
+  <img src="Docs/sensing_debug.png" alt="Sensing debug overlay" width="48%" />
+</div>
+
+Debug overlays are compiled only in debug builds and have no release-build cost.
 
 - **Enter** – toggle AI globally  
 - **F1** – Pathfinding (nav graph, obstacles, planned path)  
@@ -95,6 +115,13 @@ Debug overlays are compiled only in debug builds.
 
 ### Pathfinding Service
 Fast, modular path queries for tanks.
+
+<div align="center">
+  <img src="Docs/pathfinding_flowchart.png" alt="Pathfinding service flowchart" width="55%" />
+  <br/>
+  <em>Graph build → A* search → path output consumed by motion.</em>
+</div>
+
 - **GraphBuilder** builds a centerline nav graph
 - Stateless **A\*** search
 - Dynamic attachment for start/goal nodes
@@ -106,6 +133,13 @@ Consumes paths and steers tanks smoothly.
 
 ### Sensing Service
 Vision, hearing, and short-term memory.
+
+<div align="center">
+  <img src="Docs/sensingService_flowchart.png" alt="Sensing service flowchart" width="85%" />
+  <br/>
+  <em>FOV/LOS + audio events + decaying memory store.</em>
+</div>
+
 - FOV + LOS checks
 - Global audio bus for sound propagation
 - Decaying last-known enemy positions
@@ -114,6 +148,8 @@ Vision, hearing, and short-term memory.
 Manages weapon charge → fire lifecycle.
 - Tracks charge state, fires on release
 - Emits sound events to sensing on fire
+
+> More internal diagrams (Audio Bus, Combat Service, Motion Service) are available in `Docs/`.
 
 ---
 
@@ -125,3 +161,5 @@ cd build
 cmake ..
 cmake --build .
 ```
+Run the binary from the bin/ folder inside your build directory.
+
