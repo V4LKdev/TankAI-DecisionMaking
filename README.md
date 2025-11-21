@@ -96,8 +96,8 @@ A hierarchical model where behavior emerges from composition.
 ## Debugging
 
 <div align="center">
-  <img src="Docs/pathfinding_debug.png" alt="Pathfinding debug overlay" width="60%" />
-  <img src="Docs/sensing_debug.png" alt="Sensing debug overlay" width="48%" />
+  <img src="Docs/pathfinding_debug.png" alt="Pathfinding debug overlay" width="40%" />
+  <img src="Docs/sensing_debug.png" alt="Sensing debug overlay" width="55%" />
   <br/>
   <em>Pathfinding and Sensing debug overlay layers</em>
 </div>
